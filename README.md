@@ -1,20 +1,22 @@
 # CertDesk
 
-Certificate studio with bulk email delivery via SMTP. Upload a certificate background image (PNG/JPG/WebP/PDF), import recipients from Excel/CSV, drag data columns onto the canvas as positioned text fields, then download all certificates as a ZIP or email each one as an attachment.
+> Design, generate & deliver certificates — all in one place.
 
-## Structure
+Upload a certificate template (PNG/JPG/WebP/PDF), import recipients from Excel/CSV, drag data columns onto the canvas as positioned text fields, style them with 110+ fonts, then export as PNG/PDF/JPEG or email each certificate via SMTP.
 
-```
-certdesk/
-├── frontend/    # React + Vite + Tailwind (white enterprise theme)
-└── backend/     # Express + Nodemailer SMTP relay API
-```
+---
 
-## Prerequisites
+## Tech Stack
 
-- Node.js v18+
+| Layer | Technology |
+|-------|------------|
+| Frontend | React 18, Vite 5, Tailwind CSS 3, Zustand, React Router |
+| Export | JSZip, jsPDF, SheetJS (xlsx) |
+| Backend | Node.js, Express, Nodemailer |
 
-## Setup
+---
+
+## Quick Start
 
 ### 1. Backend
 
@@ -34,7 +36,37 @@ npm install
 npm run dev        # → http://localhost:5173
 ```
 
-Open http://localhost:5173 in your browser.
+Open **http://localhost:5173** in your browser.
+
+---
+
+## Project Structure
+
+```
+certdesk/
+├── frontend/    # React + Vite + Tailwind (white enterprise theme)
+│   └── src/
+│       ├── pages/        # Landing + Studio routes
+│       ├── components/   # Sidebar, canvas, modals, UI primitives
+│       ├── hooks/        # Canvas renderer, field drag, Excel import
+│       ├── lib/          # Certificate drawing, export, fonts, storage
+│       ├── store/        # Zustand state management
+│       └── api/         # Email API client
+│
+├── backend/     # Express + Nodemailer SMTP relay API
+│   └── src/
+│       ├── routes/       # API endpoints
+│       ├── controllers/  # Request handlers
+│       ├── services/     # Mailer service
+│       ├── middleware/   # Validation + error handling
+│       └── config.js     # Environment config
+│
+├── .gitignore
+├── LICENSE
+└── README.md
+```
+
+---
 
 ## Configuration
 
@@ -54,24 +86,35 @@ Open http://localhost:5173 in your browser.
 | `API_PROXY_TARGET` | `http://localhost:3001` | Where Vite proxies `/api` requests |
 | `PORT` | `5173` | Dev server port |
 
-## API
+---
+
+## API Endpoints
 
 | Endpoint | Method | Purpose |
 |----------|--------|---------|
 | `/api/health` | GET | Health check |
 | `/api/test-smtp` | POST | Verify SMTP credentials without sending |
-| `/api/send-email` | POST | Send one certificate PNG attachment |
+| `/api/send-email` | POST | Send one certificate as email attachment |
 
-## Tech Stack
+---
 
-| Layer | Technology |
-|-------|------------|
-| Frontend | React 18, Vite 5, Tailwind CSS 3, Zustand, Lucide icons |
-| Excel parsing | SheetJS (xlsx) |
-| ZIP generation | JSZip |
-| PDF generation | jsPDF |
-| Backend | Node.js, Express, Nodemailer |
+## Features
+
+- **Import** — PNG, JPG, WebP, GIF, PDF templates
+- **Excel/CSV** — Import recipients, auto-detect name & email columns
+- **Canvas** — Drag columns onto certificate, position with mouse/touch
+- **Styling** — 110+ fonts, bold, italic, underline, color, shadow, alignment, text transform
+- **Field controls** — Resize handles, remove button, per-field typography
+- **Export** — PNG, PDF, JPEG (single or bulk ZIP)
+- **Email** — SMTP delivery with rich-text templates, variable substitution, progress tracking
+- **Persistence** — Workspace auto-saves across refreshes (IndexedDB + localStorage)
+
+---
 
 ## License
 
-MIT
+MIT © [Deepak](LICENSE)
+
+---
+
+<p align="center">Made with ❤️ by <a href="https://github.com/phoenixdev100">Deepak</a></p>
