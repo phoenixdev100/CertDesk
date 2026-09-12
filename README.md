@@ -11,6 +11,8 @@ A modern certificate studio - upload a template, import recipients, drag fields 
 [![Vite](https://img.shields.io/badge/Vite-5-purple)](https://vitejs.dev)
 [![Tailwind](https://img.shields.io/badge/Tailwind-3-cyan)](https://tailwindcss.com)
 
+<img src="https://i.postimg.cc/ZKHQxrJb/logo.png" alt="CertDesk Logo" width="500" />
+
 </div>
 
 ---
@@ -21,7 +23,7 @@ A modern certificate studio - upload a template, import recipients, drag fields 
 
 </div>
 
-<table>
+<table align="center">
 <tr>
 <td width="50%" valign="top">
 
@@ -78,6 +80,8 @@ A modern certificate studio - upload a template, import recipients, drag fields 
 
 </div>
 
+<div align="left">
+
 ### Backend
 
 ```bash
@@ -97,6 +101,8 @@ npm run dev        # → http://localhost:5173
 ```
 
 Open **http://localhost:5173** in your browser.
+
+</div>
 
 ---
 
@@ -124,6 +130,8 @@ Open **http://localhost:5173** in your browser.
 
 </div>
 
+<div align="left">
+
 ```
 certdesk/
 ├── frontend/
@@ -147,6 +155,8 @@ certdesk/
 └── README.md
 ```
 
+</div>
+
 ---
 
 <div align="center">
@@ -154,6 +164,8 @@ certdesk/
 ## Configuration
 
 </div>
+
+<div align="left">
 
 <details>
 <summary><b>Backend .env</b></summary>
@@ -176,6 +188,8 @@ certdesk/
 | `PORT` | `5173` | Dev server port |
 
 </details>
+
+</div>
 
 ---
 
