@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-surface-muted text-ink font-sans text-[13px] antialiased;
+  }
+
+  /* Re-enable text selection inside form fields even if a parent has select-none */
+  input, textarea, select, [contenteditable] {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+}
+
+@layer components {
+  .input {
+    @apply w-full rounded-md border border-line bg-surface px-2.5 py-1.5 text-xs text-ink
+      placeholder:text-ink-faint outline-none transition-colors
+      focus:border-brand-500 focus:ring-2 focus:ring-brand-500/15;
+  }
+
+  .label {
+    @apply mb-1.5 block text-2xs font-medium uppercase tracking-wide text-ink-muted;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-md border px-3 py-1.5
+      text-xs font-medium transition-colors select-none
+      disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-md border border-line bg-surface-subtle
+      px-2 py-1 text-2xs font-medium text-ink-muted;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply rounded-full bg-line-strong;
+}
+
+.email-body-editor:empty::before {
+  content: attr(data-placeholder);
+  @apply text-ink-faint;
+  white-space: pre-line;
+  pointer-events: none;
+}
+
+/* Page fade-in animation */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up {
+  animation: fadeInUp 0.4s ease-out both;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out both;
+}
