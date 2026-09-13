@@ -7,6 +7,10 @@
     @apply bg-surface-muted text-ink font-sans text-[13px] antialiased;
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   /* Re-enable text selection inside form fields even if a parent has select-none */
   input, textarea, select, [contenteditable] {
     -webkit-user-select: text;
