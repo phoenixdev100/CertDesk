@@ -1,4 +1,4 @@
-import * as XLSX from 'xlsx';
+import * as XLSX from '@e965/xlsx';
 
 // Parses an .xlsx/.xls/.csv file into normalized row objects.
 export function parseExcelFile(file) {

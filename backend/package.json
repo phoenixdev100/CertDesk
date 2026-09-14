@@ -14,5 +14,8 @@
     "express": "^5.2.1",
     "nodemailer": "^10.0.9",
     "nodemon": "^3.1.14"
+  },
+  "overrides": {
+    "qs": "^6.16.0"
   }
 }
