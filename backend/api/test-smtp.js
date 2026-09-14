@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import { setCorsHeaders, handleOptions } from './_cors.js';
 
 function createTransporter(smtp) {
   const port = parseInt(smtp.port, 10) || 587;
@@ -24,41 +25,23 @@ function validateFields(body, fields) {
 }
 
 export default async function handler(req, res) {
+  setCorsHeaders(req, res);
+  if (handleOptions(req, res)) return;
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   const body = req.body;
-  const validationError = validateFields(body, ['smtp', 'to', 'subject', 'attachmentBase64']);
+  const validationError = validateFields(body, ['smtp']);
   if (validationError) {
     return res.status(400).json({ error: validationError });
   }
 
-  const { smtp, to, subject, html, attachmentBase64, filename } = body;
-
   try {
-    const transporter = createTransporter(smtp);
-    await transporter.sendMail({
-      from: smtp.fromName ? `"${smtp.fromName}" <${smtp.user}>` : smtp.user,
-      to,
-      subject,
-      html,
-      priority: 'high',
-      headers: {
-        'X-Priority': '1',
-        'X-MSMail-Priority': 'High',
-        Importance: 'High',
-      },
-      attachments: [
-        {
-          filename: filename || 'certificate.png',
-          content: attachmentBase64,
-          encoding: 'base64',
-          contentType: 'image/png',
-        },
-      ],
-    });
-    return res.status(200).json({ ok: true });
+    const transporter = createTransporter(body.smtp);
+    await transporter.verify();
+    return res.status(200).json({ ok: true, message: 'SMTP connection successful' });
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
