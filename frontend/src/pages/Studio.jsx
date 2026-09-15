@@ -1,11 +1,13 @@
 import { useEffect, useState, useRef } from 'react';
-import { Upload, Trash2 } from 'lucide-react';
+import { Upload, Trash2, PanelLeft, PanelRight } from 'lucide-react';
 import Header from '../components/layout/Header';
 import Sidebar from '../components/layout/Sidebar';
+import TeamPanel from '../components/layout/TeamPanel';
 import CertificateCanvas from '../components/canvas/CertificateCanvas';
 import CertDropZone from '../components/canvas/CertDropZone';
 import ZoomControls from '../components/canvas/ZoomControls';
 import RowIndicator from '../components/canvas/RowIndicator';
+import ExportMenu from '../components/canvas/ExportMenu';
 import SmtpModal from '../components/modals/SmtpModal';
 import ComposeModal from '../components/modals/ComposeModal';
 import { useToast } from '../components/ui/Toast';
@@ -33,11 +35,16 @@ export default function Studio() {
   const setZoom = useCertStore((s) => s.setZoom);
   const setImage = useCertStore((s) => s.setImage);
   const clearImage = useCertStore((s) => s.clearImage);
+  const teamMode = useCertStore((s) => s.teamMode);
   const toast = useToast();
   const restoredRef = useRef(false);
 
+  const [leftCollapsed, setLeftCollapsed] = useState(false);
+  const [rightCollapsed, setRightCollapsed] = useState(false);
+
   const [smtpOpen, setSmtpOpen] = useState(false);
   const [composeOpen, setComposeOpen] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
   const [smtpConfig, setSmtpConfig] = useState(() => loadSmtpConfig());
   const [emailSubject, setEmailSubject] = useState('');
   const [emailBodyHtml, setEmailBodyHtml] = useState('');
@@ -83,6 +90,24 @@ export default function Studio() {
         if (ws.previewRowIdx != null) {
           useCertStore.setState({ previewRowIdx: ws.previewRowIdx });
         }
+        if (ws.teamPreviewRowIdx != null) {
+          useCertStore.setState({ teamPreviewRowIdx: ws.teamPreviewRowIdx });
+        }
+        if (ws.teamMode) {
+          useCertStore.setState({ teamMode: ws.teamMode });
+        }
+        if (ws.teams) {
+          useCertStore.setState({ teams: ws.teams });
+        }
+        if (ws.teamKey) {
+          useCertStore.setState({ teamKey: ws.teamKey });
+        }
+        if (ws.teamData) {
+          useCertStore.setState({ teamData: ws.teamData });
+        }
+        if (ws.teamColumns) {
+          useCertStore.setState({ teamColumns: ws.teamColumns });
+        }
       }
 
       const dataUrl = await loadImage();
@@ -117,6 +142,12 @@ export default function Studio() {
     useCertStore((s) => s.zoomIdx),
     useCertStore((s) => s.activeFieldIdx),
     useCertStore((s) => s.previewRowIdx),
+    useCertStore((s) => s.teamPreviewRowIdx),
+    useCertStore((s) => s.teamMode),
+    useCertStore((s) => s.teams),
+    useCertStore((s) => s.teamKey),
+    useCertStore((s) => s.teamData),
+    useCertStore((s) => s.teamColumns),
   ]);
 
   // ── Persist image to IndexedDB when it changes ──
@@ -157,15 +188,33 @@ export default function Studio() {
 
   return (
     <div className="flex h-screen flex-col select-none animate-fade-in">
-      <Header />
+      <Header onOpenExport={() => setExportOpen(true)} />
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar
-          smtpConfig={smtpConfig}
-          emailSubject={emailSubject}
-          emailBodyHtml={emailBodyHtml}
-          onOpenSmtp={() => setSmtpOpen(true)}
-          onOpenCompose={() => setComposeOpen(true)}
-        />
+        {/* Left sidebar - always mounted, animates width/opacity */}
+        <div
+          className="h-full overflow-hidden transition-all duration-300 ease-out"
+          style={{ width: leftCollapsed ? '0px' : '18rem', opacity: leftCollapsed ? 0 : 1 }}
+        >
+          <Sidebar
+            smtpConfig={smtpConfig}
+            emailSubject={emailSubject}
+            emailBodyHtml={emailBodyHtml}
+            onOpenSmtp={() => setSmtpOpen(true)}
+            onOpenCompose={() => setComposeOpen(true)}
+            onCollapse={() => setLeftCollapsed(true)}
+          />
+        </div>
+
+        {leftCollapsed && (
+          <button
+            onClick={() => setLeftCollapsed(false)}
+            className="flex items-center justify-center border-r border-line bg-surface px-2 text-ink-faint transition-colors hover:bg-surface-subtle hover:text-ink"
+            title="Expand left panel"
+          >
+            <PanelLeft size={14} />
+          </button>
+        )}
+
         <main id="canvas-wrap" className="relative flex flex-1 items-center justify-center overflow-auto bg-surface-muted p-6">
           {image ? (
             <>
@@ -211,6 +260,26 @@ export default function Studio() {
             <CertDropZone />
           )}
         </main>
+
+        {rightCollapsed && (
+          <button
+            onClick={() => setRightCollapsed(false)}
+            className="flex items-center justify-center border-l border-line bg-surface px-2 text-ink-faint transition-colors hover:bg-surface-subtle hover:text-ink"
+            title="Expand right panel"
+          >
+            <PanelRight size={14} />
+          </button>
+        )}
+
+        {/* Right sidebar - always mounted, animates width/opacity */}
+        <div
+          className="h-full overflow-hidden transition-all duration-300 ease-out"
+          style={{ width: rightCollapsed ? '0px' : '18rem', opacity: rightCollapsed ? 0 : 1 }}
+        >
+          <TeamPanel
+            onCollapse={() => setRightCollapsed(true)}
+          />
+        </div>
       </div>
 
       <SmtpModal
@@ -227,6 +296,7 @@ export default function Studio() {
         bodyHtml={emailBodyHtml}
         onBodyChange={handleBodyChange}
       />
+      <ExportMenu open={exportOpen} onClose={() => setExportOpen(false)} />
     </div>
   );
 }

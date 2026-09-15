@@ -13,6 +13,8 @@ export default function CertificateCanvas() {
   const scale = useCertStore((s) => s.scale);
   const addField = useCertStore((s) => s.addField);
   const excelColumns = useCertStore((s) => s.excelColumns);
+  const teamColumns = useCertStore((s) => s.teamColumns);
+  const teams = useCertStore((s) => s.teams);
   const activeFieldIdx = useCertStore((s) => s.activeFieldIdx);
 
   useCanvasRenderer(canvasRef);
@@ -28,7 +30,8 @@ export default function CertificateCanvas() {
   const onDrop = (e) => {
     e.preventDefault();
     const key = e.dataTransfer.getData('text/plain');
-    if (!key || !excelColumns.includes(key)) return;
+    const validColumns = [...new Set([...excelColumns, ...teamColumns])];
+    if (!key || !validColumns.includes(key)) return;
     const rect = canvasRef.current.getBoundingClientRect();
     const x = clamp01((e.clientX - rect.left) / rect.width);
     const y = clamp01((e.clientY - rect.top) / rect.height);

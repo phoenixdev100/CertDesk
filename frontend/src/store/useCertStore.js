@@ -18,8 +18,16 @@ export const useCertStore = create((set, get) => ({
   nameKey: null,
   emailKey: null,
 
+  // ── Team mode ──
+  teamMode: false,
+  teams: [],          // [{ name, count }]
+  teamKey: null,      // column key used for team name (e.g. "team" or "name")
+  teamData: [],       // expanded team rows (separate from excelData)
+  teamColumns: [],    // columns from team import (separate from excelColumns)
+
   // ── Per-row preview & overrides ──
-  previewRowIdx: 0,
+  previewRowIdx: 0,      // active preview row (individual side)
+  teamPreviewRowIdx: 0,  // active preview row (team side)
   editingRowIdx: -1,    // -1 = global; >=0 = row-edit mode
   rowOverrides: {},     // { rowIdx: { fieldKey: { x?, y?, ...typo } } }
 
@@ -146,8 +154,80 @@ export const useCertStore = create((set, get) => ({
       rowOverrides: {},
     }),
 
+  // ── Team mode ──
+  setTeamMode: (enabled) =>
+    set((s) => {
+      if (!enabled) {
+        // Turning off: clear teams, keep original excelData if any
+        return { teamMode: false, teams: [], teamKey: null };
+      }
+      return { teamMode: true };
+    }),
+
+  // Import teams from parsed Excel data
+  setTeamsFromExcel: (data, columns) =>
+    set((s) => {
+      const teamKey =
+        columns.find((k) => k.includes('team')) ||
+        columns.find((k) => k.includes('name')) ||
+        columns[0] ||
+        'name';
+      const countKey = columns.find((k) => k.includes('count') || k.includes('qty') || k.includes('quantity'));
+      const teams = data
+        .map((r) => ({
+          name: r[teamKey] || '',
+          count: countKey ? Math.max(1, parseInt(r[countKey], 10) || 1) : 1,
+        }))
+        .filter((t) => t.name);
+      return { teams, teamKey, teamColumns: columns };
+    }),
+
+  // Expand teams into teamData rows (team name repeated count times)
+  expandTeams: () =>
+    set((s) => {
+      const expanded = [];
+      for (const team of s.teams) {
+        for (let i = 0; i < team.count; i++) {
+          expanded.push({ [s.teamKey || 'name']: team.name, name: team.name });
+        }
+      }
+      return {
+        teamData: expanded,
+        previewRowIdx: 0,
+        editingRowIdx: -1,
+        rowOverrides: {},
+      };
+    }),
+
+  updateTeamCount: (idx, count) =>
+    set((s) => {
+      const teams = [...s.teams];
+      teams[idx] = { ...teams[idx], count: Math.max(1, parseInt(count, 10) || 1) };
+      return { teams };
+    }),
+
+  setAllTeamCounts: (count) =>
+    set((s) => ({
+      teams: s.teams.map((t) => ({ ...t, count: Math.max(1, parseInt(count, 10) || 1) })),
+    })),
+
+  addTeam: (name, count) =>
+    set((s) => ({
+      teams: [...s.teams, { name, count: Math.max(1, parseInt(count, 10) || 1) }],
+      teamKey: s.teamKey || 'name',
+      teamColumns: s.teamColumns.length ? s.teamColumns : ['name'],
+    })),
+
+  removeTeam: (idx) =>
+    set((s) => ({
+      teams: s.teams.filter((_, i) => i !== idx),
+    })),
+
+  clearTeams: () => set({ teams: [], teamKey: null, teamData: [], teamColumns: [] }),
+
   selectPreviewRow: (rowIdx) => set({ previewRowIdx: rowIdx }),
-  exitRowEdit: () => set({ previewRowIdx: 0, editingRowIdx: -1 }),
+  selectTeamPreviewRow: (rowIdx) => set({ teamPreviewRowIdx: rowIdx }),
+  exitRowEdit: () => set((s) => ({ previewRowIdx: 0, teamPreviewRowIdx: 0, editingRowIdx: -1 })),
   resetRowOverride: (rowIdx) =>
     set((s) => {
       const rowOverrides = { ...s.rowOverrides };
@@ -164,5 +244,17 @@ export const useCertStore = create((set, get) => ({
     const s = get();
     if (s.activeFieldIdx < 0) return null;
     return pickTypography(s.fields[s.activeFieldIdx]);
+  },
+
+  // Returns team data if teams exist, else individual excelData
+  getActiveData: () => {
+    const s = get();
+    return s.teams.length > 0 ? s.teamData : s.excelData;
+  },
+
+  // Returns team columns if teams exist, else individual excelColumns
+  getActiveColumns: () => {
+    const s = get();
+    return s.teams.length > 0 ? s.teamColumns : s.excelColumns;
   },
 }));

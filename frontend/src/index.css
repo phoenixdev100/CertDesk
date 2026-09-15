@@ -75,3 +75,19 @@
 .animate-fade-in {
   animation: fadeIn 0.3s ease-out both;
 }
+
+/* Sidebar slide animations */
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-100%); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(100%); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.animate-slide-in-left {
+  animation: slideInLeft 0.25s ease-out both;
+}
+.animate-slide-in-right {
+  animation: slideInRight 0.25s ease-out both;
+}

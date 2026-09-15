@@ -2,8 +2,12 @@ import { Columns } from 'lucide-react';
 import Section from '../ui/Section';
 import { useCertStore } from '../../store/useCertStore';
 
-export default function ColumnChips() {
-  const columns = useCertStore((s) => s.excelColumns);
+export default function ColumnChips({ source = 'individual' }) {
+  const excelColumns = useCertStore((s) => s.excelColumns);
+  const teamColumns = useCertStore((s) => s.teamColumns);
+  const teams = useCertStore((s) => s.teams);
+  const activeColumns = teams.length > 0 ? teamColumns : excelColumns;
+  const columns = source === 'active' ? activeColumns : (source === 'team' ? teamColumns : excelColumns);
   if (!columns.length) return null;
 
   return (

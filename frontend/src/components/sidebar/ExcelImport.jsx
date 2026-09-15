@@ -5,7 +5,7 @@ import Button from '../ui/Button';
 import { useCertStore } from '../../store/useCertStore';
 import { parseExcelFile } from '../../hooks/useExcelImport';
 import { useToast } from '../ui/Toast';
-import { esc } from '../../lib/utils';
+import ColumnChips from './ColumnChips';
 
 export default function ExcelImport() {
   const fileRef = useRef(null);
@@ -78,7 +78,7 @@ export default function ExcelImport() {
               <Trash2 size={11} /> Clear
             </Button>
           </div>
-          <div className="max-h-44 overflow-auto rounded-md border border-line">
+          <div className="max-h-32 overflow-auto rounded-md border border-line">
             <table className="w-full text-2xs">
               <thead className="sticky top-0 bg-surface-subtle text-ink-muted">
                 <tr>
@@ -112,7 +112,7 @@ export default function ExcelImport() {
               </tbody>
             </table>
           </div>
-          <p className="mt-1 text-2xs text-ink-faint">Click a row to preview & customize it</p>
+          <ColumnChips source="individual" />
         </div>
       )}
     </Section>

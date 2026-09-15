@@ -78,6 +78,12 @@ export function saveWorkspace(state) {
       zoomIdx: state.zoomIdx,
       activeFieldIdx: state.activeFieldIdx,
       previewRowIdx: state.previewRowIdx,
+      teamPreviewRowIdx: state.teamPreviewRowIdx,
+      teamMode: state.teamMode,
+      teams: state.teams,
+      teamKey: state.teamKey,
+      teamData: state.teamData,
+      teamColumns: state.teamColumns,
     };
     localStorage.setItem(STATE_KEY, JSON.stringify(serializable));
   } catch (err) {
