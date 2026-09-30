@@ -45,19 +45,26 @@ export default function DownloadPanel() {
   const fields = useCertStore((s) => s.fields);
   const excelData = useCertStore((s) => s.excelData);
   const excelColumns = useCertStore((s) => s.excelColumns);
+  const teamData = useCertStore((s) => s.teamData);
+  const teamColumns = useCertStore((s) => s.teamColumns);
+  const teams = useCertStore((s) => s.teams);
   const previewRowIdx = useCertStore((s) => s.previewRowIdx);
   const rowOverrides = useCertStore((s) => s.rowOverrides);
 
-  const canBulk = excelData.length > 0 && fields.length > 0;
+  // Use team data if teams exist, else individual data
+  const activeData = teams.length > 0 ? teamData : excelData;
+  const activeColumns = teams.length > 0 ? teamColumns : excelColumns;
+
+  const canBulk = activeData.length > 0 && fields.length > 0;
   const canExport = image && fields.length > 0;
-  const nameKey = excelColumns.find((k) => k.includes('name')) || excelColumns[0];
+  const nameKey = activeColumns.find((k) => k.includes('name')) || activeColumns[0];
 
   // 1. Preview - downloads what's currently shown on the canvas (no Excel needed)
   const downloadPreview = async () => {
     if (!image) return toast('Load a certificate template first', 'warning');
     setBusy(true);
     try {
-      const rowData = excelData[previewRowIdx] || {};
+      const rowData = activeData[previewRowIdx] || {};
       const { blob, ext } = await exportCertificate(image, fields, rowData, previewRowIdx, rowOverrides, previewFormat);
       const label = nameKey && rowData[nameKey] ? safeName(rowData[nameKey]) : 'preview';
       triggerDownload(blob, `${label}_certificate.${ext}`);
@@ -73,11 +80,11 @@ export default function DownloadPanel() {
   const downloadSingle = async () => {
     if (!image) return toast('Load a certificate template first', 'warning');
     if (!fields.length) return toast('Place at least one field on the canvas first', 'warning');
-    if (!excelData.length) return toast('Import Excel data to select a recipient', 'warning');
+    if (!activeData.length) return toast('Import Excel data to select a recipient', 'warning');
     setBusy(true);
     try {
-      const rowIdx = Math.min(exportRowIdx, excelData.length - 1);
-      const rowData = excelData[rowIdx];
+      const rowIdx = Math.min(exportRowIdx, activeData.length - 1);
+      const rowData = activeData[rowIdx];
       const { blob, ext } = await exportCertificate(image, fields, rowData, rowIdx, rowOverrides, exportFormat);
       const label = nameKey && rowData[nameKey] ? safeName(rowData[nameKey]) : `row_${rowIdx + 1}`;
       triggerDownload(blob, `${label}_certificate.${ext}`);
@@ -91,16 +98,16 @@ export default function DownloadPanel() {
 
   // 3. Bulk export as ZIP - all rows in chosen format
   const downloadBulk = async () => {
-    if (!excelData.length) return toast('Upload an Excel file first', 'warning');
+    if (!activeData.length) return toast('Upload an Excel file first', 'warning');
     if (!fields.length) return toast('Place at least one field on the canvas first', 'warning');
     setBusy(true);
     setProgress(0);
     try {
-      const zipBlob = await exportCertificatesZip(image, fields, excelData, rowOverrides, bulkFormat, (p) => {
+      const zipBlob = await exportCertificatesZip(image, fields, activeData, rowOverrides, bulkFormat, (p) => {
         setProgress(p);
       });
       triggerDownload(zipBlob, `certificates_${bulkFormat}.zip`);
-      toast(`${excelData.length} certificate(s) exported as ${bulkFormat.toUpperCase()} ZIP`, 'success');
+      toast(`${activeData.length} certificate(s) exported as ${bulkFormat.toUpperCase()} ZIP`, 'success');
     } catch (err) {
       toast(err.message || 'Bulk export failed', 'warning');
     } finally {
@@ -129,14 +136,14 @@ export default function DownloadPanel() {
         {/* 2. Export - pick a specific recipient */}
         <div>
           <label className="label">Export certificate</label>
-          {excelData.length > 0 ? (
+          {activeData.length > 0 ? (
             <div className="space-y-1.5">
               <select
                 value={exportRowIdx}
                 onChange={(e) => setExportRowIdx(parseInt(e.target.value, 10))}
                 className="input cursor-pointer text-2xs"
               >
-                {excelData.map((row, i) => (
+                {activeData.map((row, i) => (
                   <option key={i} value={i}>
                     {i + 1}. {row[nameKey] || `Row ${i + 1}`} {row.email ? `(${row.email})` : ''}
                   </option>

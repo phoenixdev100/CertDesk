@@ -20,12 +20,15 @@ export default function EmailPanel({ smtpConfig, emailSubject, emailBodyHtml, on
   const image = useCertStore((s) => s.image);
   const fields = useCertStore((s) => s.fields);
   const excelData = useCertStore((s) => s.excelData);
+  const teamData = useCertStore((s) => s.teamData);
+  const teams = useCertStore((s) => s.teams);
   const rowOverrides = useCertStore((s) => s.rowOverrides);
 
-  const canSend = excelData.length > 0 && !!smtpConfig?.host && !!smtpConfig?.user && !!smtpConfig?.pass;
+  const activeData = teams.length > 0 ? teamData : excelData;
+  const canSend = activeData.length > 0 && !!smtpConfig?.host && !!smtpConfig?.user && !!smtpConfig?.pass;
 
   const sendAll = async () => {
-    if (!excelData.length) return toast('No recipient data loaded', 'warning');
+    if (!activeData.length) return toast('No recipient data loaded', 'warning');
     if (!image) return toast('Load a certificate template first', 'warning');
     if (!smtpConfig?.host || !smtpConfig?.user || !smtpConfig?.pass) {
       toast('Configure SMTP first', 'warning');
@@ -33,7 +36,7 @@ export default function EmailPanel({ smtpConfig, emailSubject, emailBodyHtml, on
       return;
     }
 
-    const recipients = excelData.filter((r) => r.email);
+    const recipients = activeData.filter((r) => r.email);
     if (!recipients.length) return toast('No email addresses found', 'warning');
 
     const subject = emailSubject?.trim() || 'Your Certificate';
@@ -50,7 +53,7 @@ export default function EmailPanel({ smtpConfig, emailSubject, emailBodyHtml, on
 
     for (let i = 0; i < recipients.length; i++) {
       const rowData = recipients[i];
-      const dataIdx = excelData.indexOf(rowData);
+      const dataIdx = activeData.indexOf(rowData);
       setProgress(Math.round((i / recipients.length) * 100));
 
       try {

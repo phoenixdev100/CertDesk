@@ -16,8 +16,10 @@ export function useCanvasRenderer(canvasRef) {
   const fields = useCertStore((s) => s.fields);
   const activeFieldIdx = useCertStore((s) => s.activeFieldIdx);
   const hoverFont = useCertStore((s) => s.hoverFont);
-  const previewRowIdx = useCertStore((s) => s.previewRowIdx);
+  const previewRowIdx = useCertStore((s) => (s.teams.length > 0 ? s.teamPreviewRowIdx : s.previewRowIdx));
   const excelData = useCertStore((s) => s.excelData);
+  const teamData = useCertStore((s) => s.teamData);
+  const teams = useCertStore((s) => s.teams);
   const rowOverrides = useCertStore((s) => s.rowOverrides);
 
   useEffect(() => {
@@ -35,13 +37,14 @@ export function useCanvasRenderer(canvasRef) {
     ctx.clearRect(0, 0, w, h);
     ctx.drawImage(image, 0, 0, w, h);
 
-    const previewRow = excelData[previewRowIdx] || null;
+    const activeData = teams.length > 0 ? teamData : excelData;
+    const previewRow = activeData[previewRowIdx] || null;
     const bboxes = [];
 
     for (let i = 0; i < fields.length; i++) {
       const baseField = fields[i];
       const field = getEffectiveField(baseField, previewRowIdx, rowOverrides);
-      const value = previewRow ? previewRow[field.key] || `[${field.key}]` : `[${field.key}]`;
+      const value = previewRow ? previewRow[field.key] || field.key : field.key;
       const x = field.x * w;
       const y = field.y * h;
 
@@ -63,5 +66,5 @@ export function useCanvasRenderer(canvasRef) {
     }
 
     setBboxes(bboxes);
-  }, [image, fields, activeFieldIdx, hoverFont, previewRowIdx, excelData, rowOverrides, canvasRef]);
+  }, [image, fields, activeFieldIdx, hoverFont, previewRowIdx, excelData, teamData, teams, rowOverrides, canvasRef]);
 }

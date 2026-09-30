@@ -6,20 +6,25 @@ export default function RowIndicator() {
   const editingRowIdx = useCertStore((s) => s.editingRowIdx);
   const excelData = useCertStore((s) => s.excelData);
   const excelColumns = useCertStore((s) => s.excelColumns);
+  const teamData = useCertStore((s) => s.teamData);
+  const teamColumns = useCertStore((s) => s.teamColumns);
+  const teams = useCertStore((s) => s.teams);
   const exitRowEdit = useCertStore((s) => s.exitRowEdit);
   const resetRowOverride = useCertStore((s) => s.resetRowOverride);
   const toast = useToast();
 
   if (editingRowIdx < 0) return null;
-  const row = excelData[editingRowIdx];
-  const nameKey = excelColumns.find((k) => k.includes('name')) || excelColumns[0];
+  const activeData = teams.length > 0 ? teamData : excelData;
+  const activeColumns = teams.length > 0 ? teamColumns : excelColumns;
+  const row = activeData[editingRowIdx];
+  const nameKey = activeColumns.find((k) => k.includes('name')) || activeColumns[0];
   const name = row && nameKey && row[nameKey] ? row[nameKey] : `Row ${editingRowIdx + 1}`;
 
   return (
     <div className="absolute left-3 top-3 flex items-center gap-2 rounded-md border border-line bg-surface px-3 py-1.5 shadow-card">
       <Eye size={12} className="text-brand-600" />
       <span className="text-2xs font-medium text-ink">
-        Row {editingRowIdx + 1} of {excelData.length}: {name}
+        Row {editingRowIdx + 1} of {activeData.length}: {name}
       </span>
       <button
         onClick={() => {

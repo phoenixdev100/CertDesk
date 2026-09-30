@@ -27,8 +27,10 @@ export default function FieldOverlay({ canvasRef }) {
   const scale = useCertStore((s) => s.scale);
   const naturalW = useCertStore((s) => s.naturalW);
   const naturalH = useCertStore((s) => s.naturalH);
-  const previewRowIdx = useCertStore((s) => s.previewRowIdx);
+  const previewRowIdx = useCertStore((s) => (s.teams.length > 0 ? s.teamPreviewRowIdx : s.previewRowIdx));
   const excelData = useCertStore((s) => s.excelData);
+  const teamData = useCertStore((s) => s.teamData);
+  const teams = useCertStore((s) => s.teams);
   const rowOverrides = useCertStore((s) => s.rowOverrides);
   const removeField = useCertStore((s) => s.removeField);
 
@@ -37,10 +39,11 @@ export default function FieldOverlay({ canvasRef }) {
     if (activeFieldIdx < 0 || !fields[activeFieldIdx]) return null;
     const baseField = fields[activeFieldIdx];
     const field = getEffectiveField(baseField, previewRowIdx, rowOverrides);
-    const previewRow = excelData[previewRowIdx];
+    const activeData = teams.length > 0 ? teamData : excelData;
+    const previewRow = activeData[previewRowIdx];
     const value = previewRow
-      ? previewRow[field.key] || `[${field.key}]`
-      : `[${field.key}]`;
+      ? previewRow[field.key] || field.key
+      : field.key;
 
     const ctx = getMeasureCtx();
     ctx.font = buildFieldFont(field);
@@ -64,7 +67,7 @@ export default function FieldOverlay({ canvasRef }) {
       width: (x2 - x1 + pad * 2) * scale,
       height: (th + pad * 2) * scale,
     };
-  }, [activeFieldIdx, fields, previewRowIdx, excelData, rowOverrides, naturalW, naturalH, scale]);
+  }, [activeFieldIdx, fields, previewRowIdx, excelData, teamData, teams, rowOverrides, naturalW, naturalH, scale]);
 
   // Drag a corner handle to scale font size proportionally.
   const onResizeStart = useCallback(
@@ -75,7 +78,7 @@ export default function FieldOverlay({ canvasRef }) {
       if (s.activeFieldIdx < 0) return;
 
       const baseField = s.fields[s.activeFieldIdx];
-      const field = getEffectiveField(baseField, s.previewRowIdx, s.rowOverrides);
+      const field = getEffectiveField(baseField, s.teams.length > 0 ? s.teamPreviewRowIdx : s.previewRowIdx, s.rowOverrides);
       const anchorX = field.x * s.naturalW;
       const anchorY = field.y * s.naturalH;
 
